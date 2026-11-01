@@ -1,0 +1,136 @@
+# GIT 
+1. git init
+2. git remote add origin <ssh code>
+3. git pull origin master
+4. git add .
+5. git commit -m "1st"
+6. git push origin master
+ 
+
+# DOCKER
+1. docker build -t myimage:v1 . -----–> Builds a Docker image from a local Dockerfile in your current directory.
+2. docker tag myimage:v1 username/myrepo:v1 –-----> Prepares your local image for a remote registry by renaming it with your account details.
+3. docker login –-----> Authenticates your session with your remote Docker Hub username and password.
+4. docker push username/myrepo:v1 –-----> Uploads your completed local image to the remote repository.
+5. docker pull username/myrepo:v1 –-----> Downloads a fresh copy of the image from the remote repository to your current machine.
+6. docker run -d -p 8000:80 --name myweb nginx –----> Creates and starts a container from an image in the background with mapped network ports.
+
+
+# DOCKER SWARM
+1. docker swarm init --advertise-addr <pub_ip_ds>
+(token appear copy & paste in nodes) & check using docker ps
+2. create repo on docker hub
+3. docker push pranita1412/itiss:v1 -----> username/reponame/tag
+4. docker service create --name itiss-service --replicas 3 -p 8080:80 pranita1412/itiss:v1 ------> service (created name), 8080 (on which port we want run web)
+5. docker service ps itiss-service
+6. docker service scale itiss-service=3
+7. browser check ----> <pub_ip_ds>:8080 
+
+
+# DOCKER COMPOSE (when site open ---> click link ---> go to next page ----> ip different)
+1. iacsd@server:~/docker-demo/cont1$ nano index.html
+<h1>Welcome to Container 1 (Main Server)</h1>
+<p>This is the first container's message.</p>
+<br>
+<a href="http://192.168.56.152:8082" style="font-size: 20px; color: blue;">Click here to visit Container 2 for more information</a>
+
+
+2. iacsd@server:~/docker-demo/cont2$ nano index.html
+<h1>Welcome to Container 2 (Info Page)</h1>
+<p>This is the second container. It contains the secret information you were looking for!</p>
+
+
+3. iacsd@server:~/docker-demo$ nano compose.yaml
+services:
+  cont1:
+    image: httpd
+    ports:
+      - "8081:80"
+    volumes:
+      - ./cont1:/usr/local/apache2/htdocs/
+
+  cont2:
+    image: httpd
+    ports:
+      - "8082:80"
+    volumes:
+      - ./cont2:/usr/local/apache2/htdocs/
+
+
+4. add user to docker group
+5. newgrp docker
+6. docker compose up -d
+
+
+# ANSIBLE
+1. Ansible ---> ansible , openssh-server
+2. node ----> python3, openssh-server
+
+3. iacsd@ansible:~/ansible-project$ nano inventory.ini
+[webserver]
+192.168.56.153 ansible_user=iacsd
+
+4. sudo nano /etc/locale.conf
+LANG="en_IN.UTF-8"
+LC_ALL="en_IN.UTF-8"
+
+5. ansible -i inventory all -m ping
+6. iacsd@ansible:~/ansible-project$ nano playbook.yml
+---
+- name: first playbook
+  hosts: all
+  become: true
+  tasks:
+      - name: install tree package
+        ansible.builtin.apt:
+          name: tree
+          state: latest
+      - name: user
+        ansible.builtin.user:
+          name: tinku
+          group: iacsd
+
+7. sudo nano /etc/sudoers
+last second (all line) copy that paste it at last with this
+%sudo   ALL=(ALL:ALL)NOPASSWD: ALL
+
+8. ansible-playbook -i inventory playbook.yml 
+9. check on node what task of yml is done at node
+
+
+# PUPPET
+1. /etc/puppet/puppet.conf
+[main]
+server = pserver
+runinterval = 60
+
+2. enable, start -----both
+3. agent- ---> sudo puppet agent -t
+4. server ----> sudo puppetserver ca list
+5. srever ----> sudo puppetserrver ca sign --certname clinet
+
+6. iacsd@pserver:~$ sudo mkdir -p /etc/puppet/code/environments/production/manifests
+
+7.iacsd@pserver:/etc/puppet/code/environments/production/manifests$ sudo nano site.pp
+node 'client' {
+    package {'curl':
+       ensure=> installed,
+}
+}
+
+(mention whatever we want to install instead of curl)                             
+                                                     
+8. client ---->  puppet agent -t
+9. check curl install 
+(if again want to install something then again restart server machine & run same agent on client command then check)
+
+(if want to install package, add user, assign shell then this code)
+node 'client' {
+    package {'curl':
+       ensure=> installed,
+    }
+    user {'tinku':
+       ensure=> present,
+       shell=> '/bin/bash',
+}
+}
