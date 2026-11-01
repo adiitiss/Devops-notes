@@ -1,2 +1,2 @@
 # Devops-notes
-learning...
+notes of devops 
